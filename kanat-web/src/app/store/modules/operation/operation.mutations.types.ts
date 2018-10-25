@@ -1,0 +1,6 @@
+export const INIT_DATA = "INIT_DATA";
+export const SET_INITIALIZED = "SET_INITIALIZED";
+export const ADD_OPERATION = "ADD_OPERATION";
+export const CONFIRM_OPERATION = "CONFIRM_OPERATION";
+export const ADD_SERIAL = "ADD_SERIAL";
+export const ADD_CABLE = "ADD_CABLE";

@@ -1,0 +1,23 @@
+<v-list>
+    <div class="pa-3 text-xs-center">
+        <div class="display-2 py-4">
+            <img id="company-logo" src="@/assets/logo.png" alt="cinimex-logo">
+        </div>
+    </div>
+
+    <v-divider></v-divider>
+    <v-list-tile
+            value="true"
+            v-for="(link, i) in links"
+            :key="i"
+            :to="link.path"
+    >
+        <v-list-tile-action>
+            <v-icon>{{ link.icon }}</v-icon>
+        </v-list-tile-action>
+
+        <v-list-tile-content>
+            <v-list-tile-title>{{ link.title }}</v-list-tile-title>
+        </v-list-tile-content>
+    </v-list-tile>
+</v-list>

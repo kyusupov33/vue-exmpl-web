@@ -1,0 +1,29 @@
+.v-menu__activator {
+  justify-content: center;
+}
+
+.v-small-dialog__content {
+  padding: 1em;
+
+  .v-input {
+    margin: 0;
+  }
+}
+
+.v-datatable__actions__range-controls button {
+  display: none;
+}
+
+.v-datatable__expand-content .v-card {
+  height: 300px;
+  overflow: auto;
+}
+
+.v-datatable tr {
+  cursor: pointer;
+}
+
+.v-card__text {
+  padding: 5px 15px !important;
+  word-break: break-all;
+}

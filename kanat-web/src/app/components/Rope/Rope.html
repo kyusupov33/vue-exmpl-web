@@ -1,0 +1,75 @@
+<v-card>
+    <v-card-title>
+        <v-layout row align-center justify-space-between>
+            <v-flex v-if="ropes.length" xs4>
+                <v-pagination v-model="pagination.page" :length="pages" :total-visible="7"></v-pagination>
+            </v-flex>
+            <v-layout justify-end>
+                <v-flex v-if="ropes.length" d-flex align-center xs4>
+                    <v-text-field
+                            v-model="search"
+                            append-icon="search"
+                            label="Поиск"
+                            class="my-0 mx-0 pr-3"
+                            hide-details
+                    ></v-text-field>
+                </v-flex>
+                <v-dialog :disabled="!checkAllowedAction(allowedActions, 'CableCreate') || newRopeLoading" v-model="dialog" max-width="500px">
+                    <v-btn
+                        slot="activator"
+                        color="info" :disabled="!checkAllowedAction(allowedActions, 'CableCreate')"
+                    >
+                        Добавить канат
+                    </v-btn>
+                    <v-card>
+                        <v-card-title>
+                            <span class="headline">Новый канат</span>
+                        </v-card-title>
+                        <v-card-text>
+                            <v-container>
+                                <v-layout column>
+                                    <v-form v-model="valid">
+                                        <v-flex v-for="(field, key) in ropeDialogFields">
+                                            <v-text-field :rules="fieldRules" v-model="newRope[key]" :label="field" required></v-text-field>
+                                        </v-flex>
+                                    </v-form>
+                                </v-layout>
+                            </v-container>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="error darken-1" flat @click="close()">Отмена</v-btn>
+                            <v-btn color="success darken-1" :disabled="!valid || newRopeLoading" :loading="newRopeLoading" flat @click.stop="newRopeLoading = true" @click="createNewRope()">Сохранить</v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+                <ProgressComponent :progressField="newRopeLoading"></ProgressComponent>
+            </v-layout>
+        </v-layout>
+    </v-card-title>
+    <v-data-table
+            :headers="headers"
+            :items="ropes"
+            :loading="!loading"
+            :search="search"
+            :pagination.sync="pagination"
+    >
+        <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
+        <template slot="items" slot-scope="props">
+            <td @click="openOperations(props.item)" class="rope text-xs-center" v-for="(value, key) in ropeFields">{{ props.item[key] }}</td>
+        </template>
+        <v-alert slot="no-results" :value="true" color="error" icon="warning">
+            Your search for "{{ search }}" found no results.
+        </v-alert>
+        <template slot="no-data" v-if="!loading">
+            <v-alert :value="true" color="error" icon="warning">
+                Ошибка! Не удалось загрузить данные с сервера.
+            </v-alert>
+        </template>
+        <template slot="no-data" v-if="loading">
+            <v-alert :value="true" color="info" icon="info">
+                Нет данных...
+            </v-alert>
+        </template>
+    </v-data-table>
+</v-card>

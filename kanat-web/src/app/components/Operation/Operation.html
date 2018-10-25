@@ -1,0 +1,241 @@
+<v-card>
+    <template>
+
+        <v-expansion-panel :expand="false">
+            <v-expansion-panel-content>
+                <div slot="header">Детальное описание</div>
+
+                <v-card>
+                    <v-container fluid grid-list-xl>
+                        <v-layout>
+                            <v-flex>
+                                <v-card color="grey lighten-3" xs4 height="100%">
+                                    <v-card-text><br><b>SeriaID</b>: {{ cable.cableInfo.serial }}</v-card-text>
+                                    <v-card-text><b>D каната, мм</b>: {{ cable.cableInfo.dia }}</v-card-text>
+                                    <v-card-text><b>Описание</b>: {{ cable.cableInfo.description }}<br></v-card-text>
+                                    <v-card-text><b>Статус</b>: {{ cable.status }}<br></v-card-text>
+                                    <v-card-text><b>Накопленная наработка каната</b>: {{ cable.wearOff }}<br></v-card-text>
+                                    <v-card-text><b>Остаток каната</b>: {{ cable.cableLeft }}<br></v-card-text>
+                                </v-card>
+                            </v-flex>
+                            <v-flex dark xs4 v-if="cable.tx_create">
+                                <v-card color="grey lighten-3" height="100%">
+                                    <v-card-text><br><b>Транзакция создания каната</b></v-card-text>
+                                    <v-card-text><b>ID</b>: {{ cable.tx_create.txid }}</v-card-text>
+                                    <v-card-text><b>Время</b>: {{ cable.tx_create.time }}</v-card-text>
+                                    <v-card-text><b>Signs</b>:
+                                        <pre>{{ cable.tx_create.signs }}</pre>
+                                        <br></v-card-text>
+                                </v-card>
+                            </v-flex>
+                            <v-flex xs4 v-if="cable.tx_enter_in_work">
+                                <v-card color="grey lighten-3" height="100%">
+                                    <v-card-text><br><b>Транзакция передачи каната в работу</b></v-card-text>
+                                    <v-card-text><b>ID</b>: {{ cable.tx_enter_in_work.txid }}</v-card-text>
+                                    <v-card-text><b>Время</b>: {{ cable.tx_enter_in_work.time }}</v-card-text>
+                                    <v-card-text><b>Signs</b>:
+                                        <pre>{{ cable.tx_enter_in_work.signs }}</pre>
+                                        <br></v-card-text>
+                                </v-card>
+                            </v-flex>
+                        </v-layout>
+                    </v-container>
+                </v-card>
+
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+
+    </template>
+
+    <v-card-title v-if="operations">
+        <v-layout row align-center justify-space-between>
+            <v-flex xs4>
+                <v-pagination v-model="pagination.page" :length="pages" :total-visible="7"></v-pagination>
+            </v-flex>
+            <v-layout justify-end>
+                <v-flex d-flex align-center xs4>
+                    <v-text-field
+                            v-model="search"
+                            append-icon="search"
+                            label="Поиск"
+                            class="my-0 mx-0 pr-3"
+                            hide-details
+                    ></v-text-field>
+                </v-flex>
+            </v-layout>
+        </v-layout>
+    </v-card-title>
+    <template>
+        <v-container fluid grid-list-xl>
+            <v-layout>
+                <v-flex>
+
+                    <v-card-text><b>Операции по канату: </b> <span v-if="!operations">отсутствуют</span></v-card-text>
+
+                    <v-data-table
+                            :headers="headers"
+                            :items="operations"
+                            :loading="!loading"
+                            :search="search"
+                            :pagination.sync="pagination"
+                            item-key="status"
+                            v-if="operations">
+                        <v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
+                        <template slot="items" slot-scope="props">
+                            <tr @click="props.expanded = !props.expanded">
+                                <td class="operation text-xs-center">{{ props.item.status }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.opNum }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.opDate }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.opType }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.depthStart }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.depthEnd }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.weightHookStart }}</td>
+                                <td class="operation text-xs-center">{{ props.item.operationInfo.weightHookEnd }}</td>
+                                <td class="operation text-xs-center">{{ props.item.wearOff }}</td>
+                                <td class="operation text-xs-center">{{ props.item.wearOffAfterOp }}</td>
+                                <td class="operation text-xs-center">{{ props.item.wearOffBeforeBypassAfterOp }}</td>
+
+                                <td class="operation text-xs-center">{{ props.item.tx_operation.time }}</td>
+                                <td v-if="props.item.tx_operation_confirm" class="operation text-xs-center">{{ props.item.tx_operation_confirm.time }}</td>
+                            </tr>
+                        </template>
+                        <template slot="expand" slot-scope="props">
+                            <v-layout>
+                                <v-flex>
+                                    <v-card color="grey lighten-3" flat>
+                                        <v-card-text><b>ID: </b>{{props.item.operationId}}</v-card-text>
+                                        <v-card-text><b>Статус: </b>{{props.item.status}}</v-card-text>
+                                        <v-card-text><b>Номер операции: </b>{{props.item.operationInfo.opNum}}</v-card-text>
+                                        <v-card-text><b>Дата операции: </b>{{props.item.operationInfo.opDate}}</v-card-text>
+                                        <v-card-text><b>Тип операции: </b>{{props.item.operationInfo.opType}}</v-card-text>
+                                        <v-card-text><b>Филиал: </b>{{props.item.operationInfo.filial}}</v-card-text>
+                                        <v-card-text><b>Экспедиция: </b>{{props.item.operationInfo.expedition}}</v-card-text>
+                                        <v-card-text><b>Бригада: </b>{{props.item.operationInfo.brigade}}</v-card-text>
+                                        <v-card-text><b>Месторождение: </b>{{props.item.operationInfo.oilfield}}</v-card-text>
+                                        <v-card-text><b>Куст: </b>{{props.item.operationInfo.bush}}</v-card-text>
+                                        <v-card-text><b>Скважина: </b>{{props.item.operationInfo.well}}</v-card-text>
+                                        <v-card-text><b>Вес блока: </b>{{props.item.operationInfo.blockWeight}}</v-card-text>
+                                        <v-card-text><b>Перетяжка: </b>{{props.item.operationInfo.byPass}}</v-card-text>
+                                        <v-card-text><b>Длина свечи: </b>{{props.item.operationInfo.candleLength}}</v-card-text>
+                                        <v-card-text><b>Глубина начала операции, м: </b>{{props.item.operationInfo.depthStart}}</v-card-text>
+                                        <v-card-text><b>Глубина в конце операции, м: </b>{{props.item.operationInfo.depthEnd}}</v-card-text>
+                                        <v-card-text><b>Вес на крюке в начале операции, т: </b>{{props.item.operationInfo.weightHookStart}}</v-card-text>
+                                        <v-card-text><b>Вес на крюке в конце операции, т: </b>{{props.item.operationInfo.weightHookEnd}}</v-card-text>
+                                        <v-card-text><b>Наработка за операцию (т. км): </b>{{props.item.wearOff}}</v-card-text>
+                                    </v-card>
+                                </v-flex>
+                                <v-flex dark xs4 v-if="props.item.tx_operation">
+                                    <v-card color="grey lighten-3" height="100%">
+                                        <v-card-text><br><b>Транзакция создания операции</b></v-card-text>
+                                        <v-card-text><b>ID</b>: {{ props.item.tx_operation.txid }}</v-card-text>
+                                        <v-card-text><b>Время</b>: {{ props.item.tx_operation.time }}</v-card-text>
+                                        <v-card-text><b>Signs</b>: <pre>{{ props.item.tx_operation.signs }}</pre><br></v-card-text>
+                                    </v-card>
+                                </v-flex>
+                                <v-flex xs4 v-if="props.item.tx_operation_confirm">
+                                    <v-card color="grey lighten-3" height="100%">
+                                        <v-card-text><br><b>Транзакция подтверждение операции</b></v-card-text>
+                                        <v-card-text><b>ID</b>: {{ props.item.tx_operation_confirm.txid }}</v-card-text>
+                                        <v-card-text><b>Время</b>: {{ props.item.tx_operation_confirm.time }}</v-card-text>
+                                        <v-card-text><b>Signs</b>: <pre>{{ props.item.tx_operation_confirm.signs }}</pre><br></v-card-text>
+                                    </v-card>
+                                </v-flex>
+                            </v-layout>
+                        </template>
+                        <template slot="no-results">
+                            <v-alert :value="true" color="error" icon="warning">
+                                Your search for "{{ search }}" found no results.
+                            </v-alert>
+                        </template>
+                        <template slot="no-data" v-if="!loading">
+                            <v-alert :value="true" color="error" icon="warning">
+                                Загрузка операций по канату.
+                            </v-alert>
+                        </template>
+                        <template slot="no-data" v-else="loading">
+                            <v-alert :value="true" color="info" icon="info">
+                                Нет данных...
+                            </v-alert>
+                        </template>
+                    </v-data-table>
+
+                    <v-card xs12>
+
+                        <v-btn
+                                color="info"
+                                :disabled="!checkAllowedAction(cable.allowedActions, 'CableEnterInWork')"
+                                v-on:click="cableEnterInWork()">
+                            Передача кабеля в работу
+                        </v-btn>
+
+                        <v-dialog :disabled="!checkAllowedAction(cable.allowedActions, 'CableOperationCreate')" v-model="dialog" max-width="500px">
+                            <v-btn
+                                    slot="activator"
+                                    color="info"
+                                    :disabled="!checkAllowedAction(cable.allowedActions, 'CableOperationCreate')">
+                                Создание операции с кабелем
+                            </v-btn>
+                            <v-card>
+                                <v-card-title>
+                                    <span class="headline">Новая операция</span>
+                                </v-card-title>
+                                <v-card-text>
+                                    <v-container>
+                                        <v-layout column>
+                                            <v-flex>
+                                                <v-menu
+                                                        ref="menu2"
+                                                        :close-on-content-click="false"
+                                                        v-model="menu2"
+                                                        :nudge-right="40"
+                                                        :return-value.sync="newOperation.opDate"
+                                                        lazy
+                                                        transition="scale-transition"
+                                                        offset-y
+                                                        full-width
+                                                        min-width="290px"
+                                                >
+                                                    <v-text-field
+                                                            slot="activator"
+                                                            v-model="newOperation.opDate"
+                                                            label="Дата операции"
+                                                            readonly
+                                                    ></v-text-field>
+                                                    <v-date-picker v-model="newOperation.opDate" @input="$refs.menu2.save(newOperation.opDate)"></v-date-picker>
+                                                </v-menu>
+                                            </v-flex>
+                                            <v-flex>
+                                                <v-select
+                                                        :items="opTypes"
+                                                        label="Вид работ рейса"
+                                                        v-model="newOperation.opType"
+                                                ></v-select>
+                                            </v-flex>
+                                            <v-flex v-for="(field, key) in dialogFields">
+                                                <v-text-field v-model="newOperation[key]" :label="field"></v-text-field>
+                                            </v-flex>
+                                        </v-layout>
+                                    </v-container>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="error darken-1" flat @click="close()">Отмена</v-btn>
+                                    <v-btn color="success darken-1" flat @click="cableOperationCreate()">Сохранить</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
+
+                        <v-btn
+                                color="info"
+                                :disabled="!checkAllowedAction(cable.allowedActions, 'CableOperationConfirm')"
+                                v-on:click="cableOperationConfirm()">
+                            Подтверждение операции с кабелем
+                        </v-btn>
+
+                    </v-card>
+                </v-flex>
+            </v-layout>
+        </v-container>
+    </template>
+
+</v-card>

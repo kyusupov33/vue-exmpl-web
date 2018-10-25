@@ -1,0 +1,19 @@
+.v-menu__activator {
+  justify-content: center;
+}
+
+.v-small-dialog__content {
+  padding: 1em;
+
+  .v-input {
+    margin: 0;
+  }
+}
+
+.rope {
+  cursor: pointer;
+}
+
+.v-datatable__actions__range-controls button {
+  display: none;
+}

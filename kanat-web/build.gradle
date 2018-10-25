@@ -1,0 +1,56 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+ext {
+    npmCommand = Os.isFamily(Os.FAMILY_WINDOWS) ? 'npm.cmd' : 'npm'
+}
+
+// Verify npm cache
+task npm_cache_verify(type: Exec) {
+    description = "Install NodeJS dependencies"
+    commandLine = [npmCommand, "cache", "verify"]
+}
+
+// Install packages from package.json
+task npm_install(type: Exec) {
+    dependsOn([
+        'npm_cache_verify'
+    ])
+    description = "Install NodeJS dependencies"
+    commandLine = [npmCommand, "install"]
+}
+
+// Build distrib for app
+task npm_serve(type: Exec) {
+    dependsOn([
+        'npm_install'
+    ])
+    description = "Build static distribution"
+    commandLine = [npmCommand, "run-script",  "serve"]
+}
+
+// Build distrib for app
+task npm_build(type: Exec) {
+    dependsOn([
+        'npm_install',
+        'deleteDist'
+    ])
+
+    description = "Build static distribution"
+    commandLine = [npmCommand, "run-script",  "build"]
+}
+
+task deleteDist(type: Delete) {
+    delete "dist"
+}
+
+task deleteNodeModules(type: Delete) {
+    delete "node_modules"
+}
+
+task clean {
+    dependsOn([
+		'deleteDist',
+		'deleteNodeModules'
+	])
+}
+
